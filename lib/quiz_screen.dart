@@ -3,6 +3,10 @@ import 'question.dart';
 import 'api_service.dart';
 
 class QuizScreen extends StatefulWidget {
+  final int amount;
+  final int category;
+
+  QuizScreen({required this.amount, required this.category});
   @override
   _QuizScreenState createState() => _QuizScreenState();
 }
@@ -23,16 +27,20 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   Future<void> _loadQuestions() async {
-    try {
-      final questions = await ApiService.fetchQuestions();
-      setState(() {
-        _questions = questions;
-        _loading = false;
-      });
-    } catch (e) {
-      print(e);
-    }
+  try {
+    final questions = await ApiService.fetchQuestions(
+      amount: widget.amount,
+      category: widget.category,
+    );
+    setState(() {
+      _questions = questions;
+      _loading = false;
+    });
+  } catch (e) {
+    print(e);
   }
+}
+
 
   void _submitAnswer(String selectedAnswer) {
     setState(() {
@@ -73,14 +81,37 @@ class _QuizScreenState extends State<QuizScreen> {
     }
 
     if (_currentQuestionIndex >= _questions.length) {
-      return Scaffold(
-        body: Center(
-          child: Text(
-            'Quiz Finished! Your Score: $_score/${_questions.length}',
+  return Scaffold(
+    body: Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Quiz Finished!',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
-        ),
-      );
-    }
+          SizedBox(height: 20),
+          Text(
+            'Your Score: $_score/${_questions.length}',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 20),
+          ),
+          SizedBox(height: 30),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);  // 👈 Return to StartScreen
+            },
+            child: Text('Return to Home'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 
     final question = _questions[_currentQuestionIndex];
 

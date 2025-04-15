@@ -1,3 +1,5 @@
+import 'package:html_unescape/html_unescape.dart';  // ✅ Import
+
 class Question {
   final String question;
   final List<String> options;
@@ -10,14 +12,19 @@ class Question {
   });
 
   factory Question.fromJson(Map<String, dynamic> json) {
-    List<String> options = List<String>.from(json['incorrect_answers']);
-    options.add(json['correct_answer']);
+    var unescape = HtmlUnescape();
+
+    List<String> options = List<String>.from(json['incorrect_answers'])
+        .map((opt) => unescape.convert(opt)) // ✅ decode options
+        .toList();
+
+    options.add(unescape.convert(json['correct_answer']));
     options.shuffle();
 
     return Question(
-      question: json['question'],
+      question: unescape.convert(json['question']),  // ✅ decode question
       options: options,
-      correctAnswer: json['correct_answer'],
+      correctAnswer: unescape.convert(json['correct_answer']),
     );
   }
 }
