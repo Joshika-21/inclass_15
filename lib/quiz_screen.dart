@@ -21,7 +21,12 @@ class QuizScreen extends StatefulWidget {
 
 class _QuizScreenState extends State<QuizScreen> {
   final Color _beige = const Color(0xFFF5F5DC);
-  final Color _brown = const Color(0xFFA0522D); // Lightened brown
+  final Color _brown = const Color.fromARGB(
+    255,
+    184,
+    110,
+    36,
+  ); // Lightened brown
 
   List<Question> _questions = [];
   int _currentQuestionIndex = 0;

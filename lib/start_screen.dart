@@ -33,7 +33,7 @@ class _StartScreenState extends State<StartScreen> {
   };
 
   final Color _beige = const Color(0xFFF5F5DC);
-  final Color _brown = const Color(0xFF8B4513);
+  final Color _brown = const Color.fromARGB(255, 184, 110, 36);
 
   Future<void> _showSelectionDialog<T>({
     required String title,
@@ -190,27 +190,30 @@ class _StartScreenState extends State<StartScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder:
-                        (_) => QuizScreen(
+                  PageRouteBuilder(
+                    pageBuilder:
+                        (_, __, ___) => QuizScreen(
                           amount: _selectedAmount,
                           category: _selectedCategory,
                           difficulty: _selectedDifficulty,
                           type: _selectedType,
                         ),
+                    transitionsBuilder: (_, animation, __, child) {
+                      return FadeTransition(opacity: animation, child: child);
+                    },
                   ),
                 );
               },
               style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: _brown,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: const Color.fromARGB(255, 184, 110, 36),
                 foregroundColor: Colors.white,
-                textStyle: TextStyle(fontSize: 18),
+                textStyle: const TextStyle(fontSize: 18),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              child: Text('Start Quiz'),
+              child: const Text('Start Quiz'),
             ),
           ],
         ),
