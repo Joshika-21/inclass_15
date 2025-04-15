@@ -8,7 +8,9 @@ class StartScreen extends StatefulWidget {
 
 class _StartScreenState extends State<StartScreen> {
   int _selectedAmount = 5;
-  int _selectedCategory = 9; // Default to General Knowledge
+  int _selectedCategory = 9;
+  String _selectedDifficulty = 'easy';
+  String _selectedType = 'multiple';
 
   final Map<String, int> _categories = {
     'General Knowledge': 9,
@@ -22,50 +24,192 @@ class _StartScreenState extends State<StartScreen> {
     'Geography': 22,
   };
 
+  final List<int> _amounts = [5, 10, 15, 20];
+  final List<String> _difficulties = ['easy', 'medium', 'hard'];
+  final Map<String, String> _types = {
+    'Multiple Choice': 'multiple',
+    'True / False': 'boolean',
+    'Select All That Apply': 'select_all',
+  };
+
+  final Color _beige = const Color(0xFFF5F5DC);
+  final Color _brown = const Color(0xFF8B4513);
+
+  Future<void> _showSelectionDialog<T>({
+    required String title,
+    required List<T> options,
+    required T selectedValue,
+    required void Function(T) onSelected,
+  }) async {
+    await showDialog(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            backgroundColor: _beige,
+            title: Text(title, style: TextStyle(color: _brown)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children:
+                    options
+                        .map(
+                          (option) => ListTile(
+                            title: Text(
+                              option.toString()[0].toUpperCase() +
+                                  option.toString().substring(1),
+                              style: TextStyle(color: _brown),
+                            ),
+                            onTap: () {
+                              onSelected(option);
+                              Navigator.pop(context);
+                            },
+                          ),
+                        )
+                        .toList(),
+              ),
+            ),
+          ),
+    );
+  }
+
+  Widget _buildSelectionButton({
+    required String label,
+    required String value,
+    required VoidCallback onPressed,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(fontSize: 14, color: _brown.withOpacity(0.8)),
+          ),
+          SizedBox(height: 6),
+          ElevatedButton(
+            onPressed: onPressed,
+            style: ElevatedButton.styleFrom(
+              minimumSize: Size(double.infinity, 45),
+              backgroundColor: _brown,
+              foregroundColor: Colors.white,
+              textStyle: TextStyle(fontSize: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(value),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    String selectedCategoryLabel =
+        _categories.entries
+            .firstWhere((entry) => entry.value == _selectedCategory)
+            .key;
+
+    String selectedTypeLabel =
+        _types.entries.firstWhere((entry) => entry.value == _selectedType).key;
+
     return Scaffold(
-      appBar: AppBar(title: Text('Quiz Setup')),
+      backgroundColor: _beige,
+      appBar: AppBar(title: Text('Quiz Setup'), backgroundColor: _brown),
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            DropdownButtonFormField<int>(
-              decoration: InputDecoration(labelText: 'Category'),
-              value: _selectedCategory,
-              items: _categories.entries
-                  .map((entry) => DropdownMenuItem(
-                        value: entry.value,
-                        child: Text(entry.key),
-                      ))
-                  .toList(),
-              onChanged: (val) => setState(() => _selectedCategory = val!),
+            _buildSelectionButton(
+              label: 'Category',
+              value: selectedCategoryLabel,
+              onPressed:
+                  () => _showSelectionDialog<String>(
+                    title: 'Select Category',
+                    options: _categories.keys.toList(),
+                    selectedValue: selectedCategoryLabel,
+                    onSelected: (val) {
+                      setState(() {
+                        _selectedCategory = _categories[val]!;
+                      });
+                    },
+                  ),
             ),
-            SizedBox(height: 20),
-            DropdownButtonFormField<int>(
-              decoration: InputDecoration(labelText: 'Number of Questions'),
-              value: _selectedAmount,
-              items: [5, 10, 15, 20]
-                  .map((val) => DropdownMenuItem(
-                        value: val,
-                        child: Text('$val'),
-                      ))
-                  .toList(),
-              onChanged: (val) => setState(() => _selectedAmount = val!),
+            _buildSelectionButton(
+              label: 'Number of Questions',
+              value: _selectedAmount.toString(),
+              onPressed:
+                  () => _showSelectionDialog<int>(
+                    title: 'Select Number of Questions',
+                    options: _amounts,
+                    selectedValue: _selectedAmount,
+                    onSelected: (val) {
+                      setState(() {
+                        _selectedAmount = val;
+                      });
+                    },
+                  ),
             ),
-            SizedBox(height: 30),
+            _buildSelectionButton(
+              label: 'Difficulty',
+              value:
+                  _selectedDifficulty[0].toUpperCase() +
+                  _selectedDifficulty.substring(1),
+              onPressed:
+                  () => _showSelectionDialog<String>(
+                    title: 'Select Difficulty',
+                    options: _difficulties,
+                    selectedValue: _selectedDifficulty,
+                    onSelected: (val) {
+                      setState(() {
+                        _selectedDifficulty = val;
+                      });
+                    },
+                  ),
+            ),
+            _buildSelectionButton(
+              label: 'Question Type',
+              value: selectedTypeLabel,
+              onPressed:
+                  () => _showSelectionDialog<String>(
+                    title: 'Select Question Type',
+                    options: _types.keys.toList(),
+                    selectedValue: selectedTypeLabel,
+                    onSelected: (val) {
+                      setState(() {
+                        _selectedType = _types[val]!;
+                      });
+                    },
+                  ),
+            ),
+            Spacer(),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => QuizScreen(
-                      amount: _selectedAmount,
-                      category: _selectedCategory,
-                    ),
+                    builder:
+                        (_) => QuizScreen(
+                          amount: _selectedAmount,
+                          category: _selectedCategory,
+                          difficulty: _selectedDifficulty,
+                          type: _selectedType,
+                        ),
                   ),
                 );
               },
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: _brown,
+                foregroundColor: Colors.white,
+                textStyle: TextStyle(fontSize: 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
               child: Text('Start Quiz'),
             ),
           ],
